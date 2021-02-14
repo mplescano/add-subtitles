@@ -253,9 +253,36 @@ setInterval(function(){
     if(subtitles.length == 0) return;
     var t = the_video_element.currentTime;
     var found = -1;
+    var found_second = -1;
+    var found_third = -1;
+    var found_fourth = -1;
     for(var i = 0; i < subtitles.length; i++){
         if(subtitles[i].begin+subtitle_offset <= t && subtitles[i].end+subtitle_offset >= t){
             found = i;
+            if(i + 1 < subtitles.length){
+                for(var ii = i + 1; ii < subtitles.length; ii++){
+                    if(subtitles[ii].begin + subtitle_offset <= t && subtitles[ii].end + subtitle_offset >= t){
+                        found_second = ii;
+                        if(ii + 1 < subtitles.length){
+                            for(var iii = ii + 1; iii < subtitles.length; iii++){
+                                if(subtitles[iii].begin + subtitle_offset <= t && subtitles[iii].end + subtitle_offset >= t){
+                                    found_third = iii;
+                                    if(iii + 1 < subtitles.length){
+                                        for(var iv = iii + 1; iv < subtitles.length; iv++){
+                                            if(subtitles[iv].begin + subtitle_offset <= t && subtitles[iv].end + subtitle_offset >= t){
+                                                found_fourth = iv;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
             break;
         }
     }
@@ -264,20 +291,34 @@ setInterval(function(){
     }
     else{
         subtitle_element.innerHTML = "";
-        for(var i = 0; i < subtitles[found].text.length; i++){
-            var subtitle_line = document.createElement("div");
-            subtitle_line.innerHTML = allow_tags(xss(subtitles[found].text[i]), allowed_html_tags);
-            subtitle_line.className = "subtitle_line";
-            subtitle_line.style.cssText = "font-family: "+subtitle_font+
-                ";font-size: "+subtitle_font_size+
-                "px;color:"+subtitle_font_color+
-                ";background-color:"+subtitle_background_color+";";
-            subtitle_element.appendChild(subtitle_line);
-            subtitle_element.appendChild(document.createElement("br"));
+        append_subtitle_lines(subtitle_element, subtitles[found]);
+        if (found_second != -1) {
+            append_subtitle_lines(subtitle_element, subtitles[found_second]);
+        }
+        if (found_third != -1) {
+            append_subtitle_lines(subtitle_element, subtitles[found_third]);
+        }
+        if (found_fourth != -1) {
+            append_subtitle_lines(subtitle_element, subtitles[found_fourth]);
         }
     }
     subtitle_pos();
 }, 100);
+
+function append_subtitle_lines(subtitle_element, item_subtitle) {
+    var total_lines = item_subtitle.text.length;
+    for(var i = 0; i < total_lines; i++){
+        var subtitle_line = document.createElement("div");
+        subtitle_line.innerHTML = allow_tags(xss(item_subtitle.text[i]), allowed_html_tags);
+        subtitle_line.className = "subtitle_line";
+        subtitle_line.style.cssText = "font-family: "+subtitle_font+
+            ";font-size: "+subtitle_font_size+
+            "px;color:"+subtitle_font_color+
+            ";background-color:"+subtitle_background_color+";";
+        subtitle_element.appendChild(subtitle_line);
+        subtitle_element.appendChild(document.createElement("br"));
+    }
+}
 
 function get_offset(e){
     var top = 0;
